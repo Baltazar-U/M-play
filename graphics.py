@@ -14,7 +14,9 @@ class Graphics(Tk):
 
         nbr_of_files=50
         revisions=['la 1', 'La 2','Encore une autre', 'Brun', 'la 5', 'un truc à la con', 'ça devient lourd', 'encore un', 'pourle fun', 'toujours aps', 'atteint la limite', 'toujours pas non plus mais c\'est ultra long']
-        
+        authors=['moi', 'U2']
+        albums=['le 1','le 2', 'leucémie']
+        songs=['je cours',  ' je danse', 'je chante mal']
         self.grid()
 
         self.revnumberlabel = StringVar()
@@ -44,18 +46,48 @@ class Graphics(Tk):
 
         revscrollbar = Scrollbar(self)
         revlist = Listbox(self, yscrollcommand = revscrollbar.set)
-
         for revision in revisions:
             revlist.insert(END, revision)
-
-        revlist.grid(column=0, row=2,rowspan=4, sticky='EWNS')
         revscrollbar.config(command=revlist.yview)
+        revlist.grid(column=0, row=2,rowspan=4, sticky='EWNS')
         revscrollbar.grid(column=1, row=2,rowspan=4, sticky='WNS')
 
         self.authorlabel = StringVar()
-        authorlabel = Label(self,textvariable=self.authorlabel, anchor="w", fg="black", bg="grey")
+        authorlabel = Label(self,textvariable=self.authorlabel, anchor="w", fg="black")
         authorlabel.grid(column=3,row=2,columnspan=1,sticky='NW')
         self.authorlabel.set(u"Authors :")
+        self.albumlabel = StringVar()
+        albumlabel = Label(self,textvariable=self.albumlabel, anchor="w", fg="black")
+        albumlabel.grid(column=3,row=6,columnspan=1,sticky='NW')
+        self.albumlabel.set(u"Albums :")
+        self.songlabel = StringVar()
+        songlabel = Label(self,textvariable=self.songlabel, anchor="w", fg="black")
+        songlabel.grid(column=3,row=8,columnspan=1,sticky='NW')
+        self.songlabel.set(u"Songs :")
+
+        authorscrollbar=Scrollbar(self)
+        authorlist=Listbox(self, yscrollcommand=authorscrollbar.set)
+        for author in authors:
+            authorlist.insert(END, author)
+        authorscrollbar.config(command=revlist.yview)
+        authorlist.grid(column=3, row=3,rowspan=3, sticky='EWNS')
+        authorscrollbar.grid(column=4, row=3,rowspan=3, sticky='WNS')
+
+        albumscrollbar=Scrollbar(self)
+        albumlist=Listbox(self, yscrollcommand=albumscrollbar.set)
+        for album in albums:
+            albumlist.insert(END, album)
+        albumscrollbar.config(command=revlist.yview)
+        albumlist.grid(column=3, row=7,rowspan=1, sticky='EWNS')
+        albumscrollbar.grid(column=4, row=7,rowspan=1, sticky='WNS')
+
+        songscrollbar=Scrollbar(self)
+        songlist=Listbox(self, yscrollcommand=songscrollbar.set)
+        for song in songs:
+            songlist.insert(END, song)
+        songscrollbar.config(command=revlist.yview)
+        songlist.grid(column=3, row=9,rowspan=1, sticky='EWNS')
+        songscrollbar.grid(column=4, row=9,rowspan=1, sticky='WNS')
         
         self.grid_columnconfigure(0,weight=1)
         self.grid_columnconfigure(1,weight=0)
