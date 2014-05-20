@@ -4,20 +4,37 @@
 from Tkinter import *
 import sys
 
-class Graphics(Tk):
+class GUI(Tk):
     def __init__(self,parent):
         Tk.__init__(self,parent)
         self.parent = parent
         self.initialize()
 
+    def Loadall(self):
+        
+        name='revisions\\revs.all'
+        allfile=open(name,'r')
+        for revision in allfile:
+            entries=revision.split('&')
+            self.revisions.append([entries])
+
     def initialize(self):
 
+        self.revisions=[]
+        self.Loadall()        
+
         nbr_of_files=50
-        revisions=['la 1', 'La 2','Encore une autre', 'Brun', 'la 5', 'un truc à la con', 'ça devient lourd', 'encore un', 'pourle fun', 'toujours aps', 'atteint la limite', 'toujours pas non plus mais c\'est ultra long']
         authors=['moi', 'U2']
         albums=['le 1','le 2', 'leucémie']
         songs=['je cours',  ' je danse', 'je chante mal']
         self.grid()
+
+        self.currentrevlabel = StringVar()
+        label = Label(self, textvariable=self.currentrevlabel,
+                              anchor="w",fg="black",bg="grey")
+        label.grid(column=0,row=0,columnspan=6,sticky='EW')
+        self.currentrevlabel.set(u"Currently used :")
+        
 
         self.revnumberlabel = StringVar()
         label = Label(self,textvariable=self.revnumberlabel,
@@ -32,16 +49,16 @@ class Graphics(Tk):
         self.revdatelabel.set(u"Date of release : ")
 
         self.includeslabel = StringVar()
-        includeslabel = Label(self,textvariable=self.includeslabel,
+        label = Label(self,textvariable=self.includeslabel,
                               anchor="w",fg="black",bg="grey")
-        includeslabel.grid(column=3,row=1,columnspan=1,sticky='EW')
+        label.grid(column=3,row=1,columnspan=1,sticky='EW')
         self.includeslabel.set(u"Includes "+str(nbr_of_files)+" songs.")
         self.emptylabel = StringVar()
         emptylabel = Label(self,textvariable=self.emptylabel,
                               anchor="w",fg="black",bg="grey")
         emptylabel.grid(column=4,row=1,columnspan=2,sticky='EW')
 
-        loadrevbutton = Button(self,text=u"Load",)
+        loadrevbutton = Button(self,text=u"Load", )
         loadrevbutton.grid(column=3,row=2)
         saverevbutton = Button(self,text=u"Save",)
         saverevbutton.grid(column=3,row=3)
@@ -51,7 +68,7 @@ class Graphics(Tk):
         revscrollbar = Scrollbar(self)
         revlist = Listbox(self, yscrollcommand = revscrollbar.set)
         for revision in revisions:
-            revlist.insert(END, revision)
+            revlist.insert(END, revision[0])
         revscrollbar.config(command=revlist.yview)
         revlist.grid(column=0, row=2,rowspan=4, columnspan=3, sticky='EWNS')
         revscrollbar.grid(column=3, row=2,rowspan=4, columnspan=1, sticky='WNS')
@@ -94,7 +111,7 @@ class Graphics(Tk):
         songscrollbar.grid(column=5, row=9,rowspan=1, sticky='WNSE')
         
         self.grid_columnconfigure(0,weight=1)
-        self.grid_columnconfigure(1,weight=0)
+        self.grid_columnconfigure(1,weight=1)
         self.grid_columnconfigure(2,weight=0)
         self.grid_columnconfigure(3,weight=0)
         self.grid_columnconfigure(4,weight=2)
@@ -113,8 +130,11 @@ class Graphics(Tk):
 #        self.labelVariable.set( self.entryVariable.get()+" (You pressed ENTER)" )
 #        self.entry.focus_set()
 #        self.entry.selection_range(0, Tkinter.END)
+        
 
+'''
 if __name__ == "__main__":
     app = Graphics(None)
     app.title('my application')
     app.mainloop()
+'''

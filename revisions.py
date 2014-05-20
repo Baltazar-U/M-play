@@ -25,4 +25,4 @@ class Revision:
                     self.doublets=True
                 else:
                     self.musicdata[entries[1]][entries[2]]+=[[entries[3], entries[0]]]
-        
+        revisionfile.close()
