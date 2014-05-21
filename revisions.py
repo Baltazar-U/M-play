@@ -3,7 +3,7 @@
 
 class Revision:
     def __init__(self, number=0):
-        name='revisions\\rev_'+str(number)+'.chg'
+        name='revisions\\rev_'+str(number)+'.lst'
         save=False
         self.musicdata={}
         files=[]
@@ -25,4 +25,16 @@ class Revision:
                     self.doublets=True
                 else:
                     self.musicdata[entries[1]][entries[2]]+=[[entries[3], entries[0]]]
+        revisionfile.close()
+
+        self.changes=[]
+        name='revisions\\rev_'+str(number)+'.chg'
+        try:
+            revisionfile=open(name,'r')
+        except:
+            revisionfile=open(name,'w')
+            save=True
+        if not save:
+            for change in revisionfile:
+                self.changes+=[change]
         revisionfile.close()
