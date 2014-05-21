@@ -6,6 +6,8 @@ from revisions import *
 from tkFileDialog import askopenfilenames, askdirectory
 import sys
 import mutagen
+import files
+
 
 class GUI(Tk):
     def __init__(self,parent):
@@ -19,25 +21,55 @@ class GUI(Tk):
         allfile=open(name,'r')
         for revision in allfile:
             entries=revision.split('&')
-            self.revisions+=[entries]        
+            self.revisions+=[entries]
+
+    def updatemusicdata(self):
+        self.authorlist.delete(0, END)
+        self.albumlist.delete(0, END)
+        self.songlist.delete(0, END)
+        
+        for author in sorted(self.current.musicdata):
+            self.authorlist.insert(END, author)
+        for author in self.current.musicdata:
+            for album in sorted(self.current.musicdata[author]):
+                self.albumlist.insert(END, album)
+        for author in self.current.musicdata:
+            for album in self.current.musicdata[author]:
+                for song in sorted(self.current.musicdata[author][album]):
+                    self.songlist.insert(END, song[0])
 
     def plusfile(self):
-        self.newfiles=askopenfilenames()
-        self.newfiles=self.newfiles.split(' ')
+        newfiles=askopenfilenames()
+        newfiles=newfiles.split('.')
+        
 
     def plusdir(self):
-        self.newfolder=askdirectory()
+        newfolder=askdirectory()
+        listtoimport=files.listfiles(newfolder)
+        for songimported in listtoimport:
+            if songimported in self.current.songlist:
+                listtoimport.remove(songimported)
+        if(len(listtoimport)>0):
+            self.mustsave=True
+        self.current.add(listtoimport)
+        self.updatemusicdata()
+        print self.current.musicdata
+        self.update()
+
 
     def initialize(self):
         
         self.revisions=[]
         self.Loadall()
         self.current=Revision(0)
+        self.mustsave=False
 
-        nbr_of_files=50
+        '''
         authors=['moi', 'U2']
         albums=['le 1','le 2', 'leucémie']
         songs=['je cours',  ' je danse', 'je chante mal']
+        '''
+
         self.grid()
 
         self.currentrevlabel = StringVar()
@@ -63,7 +95,7 @@ class GUI(Tk):
         label = Label(self,textvariable=self.includeslabel,
                               anchor="w",fg="black",bg="grey")
         label.grid(column=3,row=1,columnspan=2,sticky='EW')
-        self.includeslabel.set(u"Includes "+str(nbr_of_files)+" songs.")
+        self.includeslabel.set(u"Includes "+str(len(self.current.songlist))+" songs.")
         self.emptylabel = StringVar()
         emptylabel = Label(self,textvariable=self.emptylabel,
                               anchor="w",fg="black",bg="grey")
@@ -79,7 +111,11 @@ class GUI(Tk):
         loadrevbutton.grid(column=4,row=3)
         loadrevbutton = Button(self,text=u"Load active", )
         loadrevbutton.grid(column=4,row=4)
-        saverevbutton = Button(self,text=u"Save",)
+        if self.mustsave:
+            saverevbutton = Button(self,text=u"Must be saved", fg="red")
+        else:
+            saverevbutton = Button(self,text=u"Saved", fg="black")
+
         saverevbutton.grid(column=4,row=5)
 
         self.chooselabel = StringVar()
@@ -101,8 +137,15 @@ class GUI(Tk):
         addbutton.grid(column=4, row=9)
         addbutton.buttons = Menu(addbutton, tearoff = 0)
         addbutton["menu"]=addbutton.buttons
-        addbutton.buttons.add_checkbutton(label="Folder",  command = self.plusdir)
-        addbutton.buttons.add_checkbutton(label="Files", command = self.plusfile)
+        addbutton.buttons.add_cascade(label="Folder",  command = self.plusdir)
+        addbutton.buttons.add_cascade(label="Files", command = self.plusfile)
+
+        self.authorentry = Entry(self)
+        self.authorentry.grid(column=4, row=10)
+        self.albumentry = Entry(self)
+        self.albumentry.grid(column=4, row=11)
+        self.songentry = Entry(self)
+        self.songentry.grid(column=4, row=12)
 
         revscrollbar = Scrollbar(self)
         revlist = Listbox(self, yscrollcommand = revscrollbar.set)
@@ -123,8 +166,8 @@ class GUI(Tk):
         for change in self.current.changes:
             self.revchangelist.insert(END, change)
         revchangescrollbar.config(command=self.revchangelist.yview)
-        self.revchangelist.grid(column=0, row=9,rowspan=1, columnspan=3, sticky='EWNS')
-        revchangescrollbar.grid(column=3, row=9,rowspan=1, sticky='WNS')
+        self.revchangelist.grid(column=0, row=9,rowspan=4, columnspan=3, sticky='EWNS')
+        revchangescrollbar.grid(column=3, row=9,rowspan=4, sticky='WNS')
 
         self.authorlabel = StringVar()
         authorlabel = Label(self,textvariable=self.authorlabel, anchor="w", fg="black")
@@ -136,39 +179,35 @@ class GUI(Tk):
         self.albumlabel.set(u"Albums :")
         self.songlabel = StringVar()
         songlabel = Label(self,textvariable=self.songlabel, anchor="w", fg="black")
-        songlabel.grid(column=5,row=10,columnspan=1,sticky='NW')
+        songlabel.grid(column=5,row=13,columnspan=1,sticky='NW')
         self.songlabel.set(u"Songs :")
 
         authorscrollbar=Scrollbar(self)
-        authorlist=Listbox(self, yscrollcommand=authorscrollbar.set)
-        for author in authors:
-            authorlist.insert(END, author)
-        authorscrollbar.config(command=revlist.yview)
-        authorlist.grid(column=5, row=3,rowspan=5, sticky='EWNS')
+        self.authorlist=Listbox(self, yscrollcommand=authorscrollbar.set)
+        authorscrollbar.config(command=self.authorlist.yview)
+        self.authorlist.grid(column=5, row=3,rowspan=5, sticky='EWNS')
         authorscrollbar.grid(column=6, row=3,rowspan=5, sticky='WNSE')
 
         albumscrollbar=Scrollbar(self)
-        albumlist=Listbox(self, yscrollcommand=albumscrollbar.set)
-        for album in albums:
-            albumlist.insert(END, album)
-        albumscrollbar.config(command=revlist.yview)
-        albumlist.grid(column=5, row=9,rowspan=1, sticky='EWNS')
-        albumscrollbar.grid(column=6, row=9,rowspan=1, sticky='WNSE')
+        self.albumlist=Listbox(self, yscrollcommand=albumscrollbar.set)
+        albumscrollbar.config(command=self.albumlist.yview)
+        self.albumlist.grid(column=5, row=9,rowspan=4, sticky='EWNS')
+        albumscrollbar.grid(column=6, row=9,rowspan=4, sticky='WNSE')
 
         songscrollbar=Scrollbar(self)
-        songlist=Listbox(self, yscrollcommand=songscrollbar.set)
-        for song in songs:
-            songlist.insert(END, song)
-        songscrollbar.config(command=revlist.yview)
-        songlist.grid(column=5, row=11,rowspan=1, sticky='EWNS')
-        songscrollbar.grid(column=6, row=11,rowspan=1, sticky='WNSE')
+        self.songlist=Listbox(self, yscrollcommand=songscrollbar.set)
+        songscrollbar.config(command=self.authorlist.yview)
+        self.songlist.grid(column=5, row=14,rowspan=1, sticky='EWNS')
+        songscrollbar.grid(column=6, row=14,rowspan=1, sticky='WNSE')
+
+        self.updatemusicdata()
         
         self.grid_columnconfigure(0,weight=1)
         self.grid_columnconfigure(1,weight=1)
         self.grid_columnconfigure(2,weight=0)
         self.grid_columnconfigure(3,weight=0)
         self.grid_columnconfigure(4,weight=0)
-        self.grid_columnconfigure(5,weight=1)
+        self.grid_columnconfigure(5,weight=2)
         self.grid_columnconfigure(6,weight=0)
         self.resizable(True,False)
         self.update()
